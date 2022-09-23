@@ -27,6 +27,22 @@ jobs:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
             - ~/nest-ci-cd/node_modules
+  lint:
+    working_directory: ~/nest-ci-cd
+    docker:
+      - image: cimg/node:18.9.0-browsers
+    steps:
+      - restore_cache:
+          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
+      - run:
+          name: ESLint
+          command: npm run lint
+      - run:
+          name: Prettier
+          command: npm run prettier:check
+
 
 workflows:
   version: 2
@@ -36,3 +52,6 @@ workflows:
       - dependencies:
           requires:
             - checkout
+      - lint:
+          requires:
+            - dependencies
