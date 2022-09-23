@@ -1,0 +1,19 @@
+version: 2.1
+
+jobs:
+  checkout:
+    working_directory: ~/nest-ci-cd
+    docker:
+      - image: cimg/node:18.9.0-browsers
+    steps:
+      - checkout
+      - save_cache:
+          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/nest-ci-cd
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - checkout
