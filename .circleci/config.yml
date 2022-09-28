@@ -4,20 +4,20 @@ jobs:
   checkout:
     working_directory: ~/nest-ci-cd
     docker:
-      - image: cimg/node:18.9.0-browsers
+      - image: cimg/node:18.9.1
     steps:
       - checkout
-      - save_cache:
-          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - persist_to_workspace:
+          root: ~/
           paths:
-            - ~/nest-ci-cd
+            - nest-ci-cd
   dependencies:
     working_directory: ~/nest-ci-cd
     docker:
-      - image: cimg/node:18.9.0-browsers
+      - image: cimg/node:18.9.1
     steps:
-      - restore_cache:
-          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ~/nest-ci-cd
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
@@ -32,8 +32,8 @@ jobs:
     docker:
       - image: cimg/node:18.9.0-browsers
     steps:
-      - restore_cache:
-          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ~/nest-ci-cd
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
@@ -47,8 +47,8 @@ jobs:
     docker:
       - image: cimg/node:18.9.0-browsers
     steps:
-      - restore_cache:
-          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ~/nest-ci-cd
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
@@ -62,8 +62,8 @@ jobs:
     docker:
       - image: cimg/node:18.9.0-browsers
     steps:
-      - restore_cache:
-          key: v0-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: ~/nest-ci-cd
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
