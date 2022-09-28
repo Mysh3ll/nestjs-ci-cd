@@ -44,9 +44,6 @@ jobs:
       - run:
           name: Test
           command: npm run test
-      - run:
-          name: E2E
-          command: npm run test:e2e
   build:
     working_directory: ~/nest-ci-cd
     docker:
@@ -59,11 +56,6 @@ jobs:
       - run:
           name: Build
           command: npm run build
-      - save_cache:
-          key: v0-build-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - ~/nest-ci-cd/dist/nest-build
-
 
 workflows:
   version: 2
