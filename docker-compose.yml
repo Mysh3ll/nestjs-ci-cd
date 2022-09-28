@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: production
+    container_name: "nest_ci_cd"
+    restart: always
+    working_dir: "/usr/src/app"
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    tty: true
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://root:toor@postgres:5432/nest_ci_cd
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "8080:3000"
+    networks:
+      - prod
+
+  postgres:
+    image: postgres:13.3
+    container_name: "nest_ci_cd_postgres"
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: toor
+      POSTGRES_DB: nest_ci_cd
+    ports:
+      - "35000:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - prod
+
+networks:
+  prod:
+
+volumes:
+  node_modules:
+  pgdata:
