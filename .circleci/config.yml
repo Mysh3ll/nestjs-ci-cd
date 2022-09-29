@@ -8,20 +8,52 @@ commands:
     parameters:
       working-directory:
         type: string
-        default: .
+        default: ~/project/backend
     steps:
       - restore_cache:
-          key: npm-install-<< parameters.working-directory >>-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
+          key: npm-install-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
           paths:
-              - << parameters.working-directory >>/node_modules
+              - ~/project/<< parameters.working-directory >>/node_modules
       - run:
           name: Install dependencies
           command: npm ci
           working_directory: << parameters.working-directory >>
       - save_cache:
-          key: npm-install-<< parameters.working-directory >>-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
+          key: npm-install-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
           paths:
             - << parameters.working-directory >>/node_modules
+  lint-check:
+    parameters:
+      working-directory:
+        type: string
+        default: .
+    steps:
+      - restore_cache:
+          key: npm-install-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
+          paths:
+            - << parameters.working-directory >>/node_modules
+      - run:
+          name: ESLint
+          command: npm run lint
+          working_directory: << parameters.working-directory >>
+      - run:
+          name: Prettier
+          command: npm run prettier:check
+          working_directory: << parameters.working-directory >>
+  test-check:
+    parameters:
+      working-directory:
+        type: string
+        default: .
+    steps:
+      - restore_cache:
+          key: npm-install-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
+          paths:
+            - << parameters.working-directory >>/node_modules
+      - run:
+          name: Test
+          command: npm run test
+          working_directory: << parameters.working-directory >>
 
 jobs:
   dependencies:
@@ -33,33 +65,22 @@ jobs:
           path: ~/project
       - npm-install
   lint:
-    working_directory: backend
     docker:
       - image: cimg/node:18.9.1
+    working_directory: backend
     steps:
       - checkout:
           path: ~/project
-      - restore_cache:
-          key: npm-install-.-{{ checksum "./package.json" }}-{{ checksum "./package-lock.json" }}
-      - run:
-          name: ESLint
-          command: npm run lint
-      - run:
-          name: Prettier
-          command: npm run prettier:check
+      - lint-check
+
   test:
-    working_directory: backend
     docker:
       - image: cimg/node:18.9.1
+    working_directory: backend
     steps:
       - checkout:
           path: ~/project
-      - restore_cache:
-          key: npm-install-.-{{ checksum "./package.json" }}-{{ checksum "./package-lock.json" }}
-      - run:
-          name: Test
-          command: npm run test
-          working_directory: backend
+      - test-check
 
 workflows:
   version: 2
@@ -76,7 +97,7 @@ workflows:
           repo: "${AWS_RESOURCE_NAME_PREFIX}"
           tag: "latest,v0.1.${CIRCLE_BUILD_NUM}"
           dockerfile: Dockerfile
-          path: .
+          path: backend
           requires:
             - test
 
