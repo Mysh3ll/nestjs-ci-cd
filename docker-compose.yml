@@ -2,7 +2,7 @@ version: "3.8"
 services:
   api:
     build:
-      dockerfile: Dockerfile
+      dockerfile: backend/Dockerfile
       context: .
       target: production
     container_name: "nest_ci_cd"

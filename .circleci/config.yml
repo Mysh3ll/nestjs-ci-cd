@@ -5,11 +5,12 @@ orbs:
 
 jobs:
   dependencies:
-    working_directory: ~/nest-ci-cd
+    working_directory: backend
     docker:
       - image: cimg/node:18.9.1
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
@@ -18,13 +19,14 @@ jobs:
       - save_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
           paths:
-            - ~/nest-ci-cd/node_modules
+            - ~/project/node_modules
   lint:
-    working_directory: ~/nest-ci-cd
+    working_directory: backend
     docker:
       - image: cimg/node:18.9.1
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
@@ -34,11 +36,12 @@ jobs:
           name: Prettier
           command: npm run prettier:check
   test:
-    working_directory: ~/nest-ci-cd
+    working_directory: backend
     docker:
       - image: cimg/node:18.9.1
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - restore_cache:
           key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
       - run:
