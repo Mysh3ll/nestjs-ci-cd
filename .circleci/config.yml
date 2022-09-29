@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  aws-ecr: circleci/aws-ecr@8.1.0
+
 jobs:
   dependencies:
     working_directory: ~/nest-ci-cd
@@ -41,29 +44,6 @@ jobs:
       - run:
           name: Test
           command: npm run test
-  build:
-    working_directory: ~/nest-ci-cd
-    docker:
-      - image: cimg/node:18.9.1
-    steps:
-      - checkout
-      - restore_cache:
-          key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
-      - run:
-          name: Build
-          command: npm run build
-      - run:
-          name: Install Docker Compose
-          environment:
-            COMPOSE_VERSION: '1.29.2'
-          command: |
-            curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - setup_remote_docker
-      - run:
-          name: Build images of services declared in docker-compose.yml
-          command: docker-compose build
 
 workflows:
   version: 2
@@ -76,6 +56,11 @@ workflows:
       - test:
           requires:
             - lint
-      - build:
+      - aws-ecr/build-and-push-image:
+          repo: "${AWS_RESOURCE_NAME_PREFIX}"
+          tag: "latest,v0.1.${CIRCLE_BUILD_NUM}"
+          dockerfile: Dockerfile
+          path: .
           requires:
             - test
+
