@@ -82,6 +82,16 @@ jobs:
           path: ~/project
       - test-check
 
+  release:
+    executor:
+      name: aws-ecr/default
+    steps:
+      - aws-ecr/build-and-push-image:
+          repo: "${AWS_RESOURCE_NAME_PREFIX}"
+          tag: "latest,v0.1.${CIRCLE_BUILD_NUM}"
+          dockerfile: Dockerfile
+          path: backend
+
 workflows:
   version: 2
   ci:
@@ -93,11 +103,7 @@ workflows:
       - test:
           requires:
             - lint
-      - aws-ecr/build-and-push-image:
-          repo: "${AWS_RESOURCE_NAME_PREFIX}"
-          tag: "latest,v0.1.${CIRCLE_BUILD_NUM}"
-          dockerfile: Dockerfile
-          path: backend
+      - release:
           requires:
             - test
 
