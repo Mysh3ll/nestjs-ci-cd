@@ -3,23 +3,35 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@8.1.0
 
-jobs:
-  dependencies:
-    working_directory: backend
-    docker:
-      - image: cimg/node:18.9.1
+commands:
+  npm-install:
+    parameters:
+      working-directory:
+        type: string
+        default: .
     steps:
-      - checkout:
-          path: ~/project
       - restore_cache:
-          key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
+          key: npm-install-<< parameters.working-directory >>-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
+          paths:
+              - << parameters.working-directory >>/node_modules
       - run:
           name: Install dependencies
           command: npm ci
+          working_directory: << parameters.working-directory >>
       - save_cache:
-          key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
+          key: npm-install-<< parameters.working-directory >>-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
           paths:
-            - ~/project/node_modules
+            - << parameters.working-directory >>/node_modules
+
+jobs:
+  dependencies:
+    docker:
+      - image: cimg/node:18.9.1
+    working_directory: backend
+    steps:
+      - checkout:
+          path: ~/project
+      - npm-install
   lint:
     working_directory: backend
     docker:
@@ -28,7 +40,7 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
+          key: npm-install-backend-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "backend/package-lock.json" }}
       - run:
           name: ESLint
           command: npm run lint
@@ -43,10 +55,11 @@ jobs:
       - checkout:
           path: ~/project
       - restore_cache:
-          key: v0-node-{{ .Branch }}-{{ checksum "package.json" }}
+          key: npm-install-backend-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "backend/package-lock.json" }}
       - run:
           name: Test
           command: npm run test
+          working_directory: backend
 
 workflows:
   version: 2
