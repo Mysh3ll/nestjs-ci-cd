@@ -1,15 +1,3 @@
-terraform {
-  backend "s3" {
-    bucket         = "nestcicd-backend-tfstate"
-    key            = "state/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    kms_key_id     = "alias/terraform-bucket-key"
-    dynamodb_table = "terraform-state"
-    profile        = "terraform"
-  }
-}
-
 # KMS key & alias
 
 resource "aws_kms_key" "terraform-bucket-key" {
