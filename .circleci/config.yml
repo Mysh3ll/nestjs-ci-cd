@@ -22,6 +22,7 @@ commands:
           key: npm-install-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working-directory >>/package.json" }}-{{ checksum "<< parameters.working-directory >>/package-lock.json" }}
           paths:
             - << parameters.working-directory >>/node_modules
+
   lint-check:
     parameters:
       working-directory:
@@ -40,6 +41,7 @@ commands:
           name: Prettier
           command: npm run prettier:check
           working_directory: << parameters.working-directory >>
+
   test-check:
     parameters:
       working-directory:
@@ -54,6 +56,33 @@ commands:
           name: Test
           command: npm run test
           working_directory: << parameters.working-directory >>
+
+  terraform-plan:
+    parameters:
+      working-directory:
+        type: string
+        default: ./infrastructure
+      image:
+        type: string
+    steps:
+      - run:
+          name: Terraform Plan
+          working_directory: << parameters.working-directory >>
+          command: |
+            terraform init -input=false
+            terraform plan
+
+  terraform-apply:
+    parameters:
+      working-directory:
+        type: string
+        default: ./infrastructure
+    steps:
+      - run:
+          name: Terraform Apply
+          working_directory: << parameters.working-directory >>
+          command: |
+            terraform apply
 
 jobs:
   dependencies:
@@ -91,6 +120,15 @@ jobs:
           tag: "latest,v0.1.${CIRCLE_BUILD_NUM}"
           dockerfile: Dockerfile
           path: backend
+
+  deploy:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:latest
+    steps:
+      - checkout:
+          path: ~/project
+      - terraform-plan
+      - terraform-apply
 
 workflows:
   version: 2
