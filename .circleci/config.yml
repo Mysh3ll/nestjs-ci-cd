@@ -62,8 +62,6 @@ commands:
       working-directory:
         type: string
         default: ./infrastructure
-      image:
-        type: string
     steps:
       - run:
           name: Terraform Plan
@@ -144,4 +142,7 @@ workflows:
       - release:
           requires:
             - test
+      - deploy:
+          requires:
+            - release
 
