@@ -80,7 +80,7 @@ commands:
           name: Terraform Apply
           working_directory: << parameters.working-directory >>
           command: |
-            terraform apply
+            terraform apply --auto-approve
 
 jobs:
   dependencies:
