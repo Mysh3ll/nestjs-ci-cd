@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@8.1.0
+  aws-ecs: circleci/aws-ecs@3.2.0
 
 commands:
   npm-install:
@@ -119,7 +120,7 @@ jobs:
           dockerfile: Dockerfile
           path: backend
 
-  deploy:
+  deploy-infra:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:latest
     steps:
@@ -142,7 +143,12 @@ workflows:
       - release:
           requires:
             - test
-      - deploy:
+      - deploy-infra:
           requires:
             - release
-
+      - aws-ecs/deploy-service-update:
+          requires:
+            - deploy-infra
+          family: "${AWS_RESOURCE_APP_NAME}-development-ecs-service"
+          cluster: "${AWS_RESOURCE_APP_NAME}-development-cluster"
+          container-image-name-updates: "container=${AWS_RESOURCE_APP_NAME}-development-container,tag=latest"
