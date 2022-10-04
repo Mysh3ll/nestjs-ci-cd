@@ -13,11 +13,9 @@ terraform {
     encrypt        = true
     kms_key_id     = "alias/terraform-bucket-key"
     dynamodb_table = "terraform-state"
-    profile        = "terraform"
   }
 }
 
 provider "aws" {
   region     = var.aws_region
-  profile = "terraform"
 }
